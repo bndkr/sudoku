@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace SudokuSolve
 {
@@ -13,73 +10,46 @@ namespace SudokuSolve
     {
       int idx = 0;
       int size = puzzle.GetSize();
+      var possibleChrs = puzzle.GetPossibleChars();
+
       int numCells = size * size;
-      var possibleValues = puzzle.GetPossibleChars();
+
       bool backtracking = false;
 
-      while (idx < numCells && idx >= 0)
+      while (idx >= 0 && idx < size * size)
       {
-        here:
         int x = idx % size;
         int y = idx / size;
-        char val = puzzle.GetCell(x, y);
-        bool writeable = puzzle.IsCellWriteable(x, y);
 
-        if (writeable)
+        if (puzzle.IsCellWriteable(x, y))
         {
-          if (backtracking)
+          if (puzzle.GetCell(x, y) == Sudoku.EMPTY)
+            puzzle.SetCell(x, y, possibleChrs[0]);
+
+          if (puzzle.CheckCellValid(x, y) && !backtracking)
           {
-            // increment the current value
-            for (int i = 0; i < possibleValues.Length; i++)
-            {
-              if (possibleValues[i] == val)
-              {
-                // if it's the last possible value, backtrack
-                if (i == possibleValues.Length - 1)
-                {
-                  backtracking = true;
-                  puzzle.SetCell(x, y, Sudoku.EMPTY);
-                  callback(puzzle, 0);
-                  idx--;
-                  goto here;
-                }
-                else
-                {
-                  puzzle.SetCell(x, y, possibleValues[i + 1]);
-                  callback(puzzle, 0);
-                }
-              }
-            }
-          }
-          if (val == Sudoku.EMPTY)
-          {
-            puzzle.SetCell(x, y, possibleValues[0]);
-            val = possibleValues[0];
-            callback(puzzle, 0);
-          }
-          if (puzzle.CheckCellValid(x, y))
-          {
-            backtracking = false;
             idx++;
           }
           else
           {
-            for (int i = 0; i < possibleValues.Length; i++)
+            // increment it until it's valid or it overflows
+            char incremented = puzzle.GetCell(x, y);
+            while (incremented != Sudoku.EMPTY)
             {
-              if (possibleValues[i] == val)
-              {
-                // if it's the last possible value, backtrack
-                if (i == possibleValues.Length - 1)
-                {
-                  backtracking = true;
-                  puzzle.SetCell(x, y, Sudoku.EMPTY);
-                  idx--;
-                }
-                else
-                {
-                  puzzle.SetCell(x, y, possibleValues[i + 1]);
-                }
-              }
+              incremented = GetIncrementCell(puzzle, x, y);
+              puzzle.SetCell(x, y, incremented);
+              if (puzzle.CheckCellValid(x, y)) break;
+            }
+
+            if (incremented == Sudoku.EMPTY)
+            {
+              idx--;
+              backtracking = true;
+            }
+            else
+            {
+              backtracking = false;
+              idx++;
             }
           }
         }
@@ -88,9 +58,32 @@ namespace SudokuSolve
           if (backtracking) idx--;
           else idx++;
         }
+        callback(puzzle, new Dictionary<string, string> { { "index", idx.ToString() } }, false);
       }
-
+      callback(puzzle, new Dictionary<string, string> { }, true);
       return puzzle;
+    }
+
+    public static char GetIncrementCell(Sudoku s, int x, int y)
+    {
+      char[] possibleChars = s.GetPossibleChars();
+      int size = s.GetSize();
+      char cell = s.GetCell(x, y);
+      if (cell == Sudoku.EMPTY)
+        return possibleChars[0];
+
+      for (int i = 0; i < size; i++)
+      {
+        if (possibleChars[i] == cell)
+        {
+          if (i == size - 1)
+          {
+            return Sudoku.EMPTY;
+          }
+          return possibleChars[i + 1];
+        }
+      }
+      throw new Exception("char is invalid");
     }
   }
 }

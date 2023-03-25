@@ -9,8 +9,8 @@ namespace SudokuSolve
 
   // this should be called anytime a solver updates the grid state
   // so it can be displayed to the user as the alogorithm runs
-  public delegate void UpdateCallback(Sudoku sudoku, double progress);
-    
+  public delegate void UpdateCallback(Sudoku sudoku, Dictionary<string, string> processingData, bool done);
+
   public interface ISudokuSolver
   {
     Sudoku Solve(Sudoku initial, UpdateCallback callback);

@@ -9,44 +9,42 @@ namespace SudokuSolve
   public class SimulatedAnnealingSolver : ISudokuSolver
   {
 
-    private static int MAX_STEPS = 10000;
+    private static int MAX_STEPS = 100000;
     private static int INIT_TEMP = 100;
 
     public Sudoku Solve(Sudoku initial, UpdateCallback callback)
     {
       var size = initial.GetSize();
       var possibleChars = initial.GetPossibleChars();
-      var remainingNums = new int[size];
+      var remainingNumsInRow = new List<List<char>>();
 
-      // count how many of each char the board has
-      for (int i = 0; i < size; i++) // for each possible char
+      // get all the initial numbers by column
+      for (int col = 0; col < size; col++)
       {
-        remainingNums[i] = size;
-        for (int x = 0; x < size; x++) // for each grid square
+        var colRollup = new List<char>();
+        for (int row = 0; row < size; row++)
         {
-          for (int y = 0; y < size; y++)
+          if (!initial.IsCellWriteable(col, row))
           {
-            if (initial.GetCell(x, y) == possibleChars[i])
-            {
-              remainingNums[i]--;
-            }
+            colRollup.Add(initial.GetCell(col, row));
           }
         }
+        remainingNumsInRow.Add(colRollup);
       }
 
-      // populate the board with the missing numbers
-      for (int x = 0; x < size; x++)
+      for (int col = 0; col < size; col++)
       {
-        for (int y = 0; y < size; y++)
+        foreach (char c in possibleChars)
         {
-          if (initial.GetCell(x, y) == Sudoku.EMPTY)
+          if (!remainingNumsInRow[col].Contains(c))
           {
-            for (int i = 0; i < size; i++)
+            // insert the char
+            for (int row = 0; row < size; row++)
             {
-              if (remainingNums[i] > 0)
+              if (initial.IsCellWriteable(col, row) && 
+                initial.GetCell(col, row) == Sudoku.EMPTY)
               {
-                initial.SetCell(x, y, possibleChars[i]);
-                remainingNums[i]--;
+                initial.SetCell(col, row, c);
                 break;
               }
             }
@@ -66,12 +64,20 @@ namespace SudokuSolve
         if (r.NextDouble() < AcceptanceProbability(curr, neighbor, temp))
         {
           curr = neighbor;
-          callback(curr, temp);
-          if (CountErrors(curr) == 0)
+          callback(curr, new Dictionary<string, string> { 
+              { "Temperature", temp.ToString() },
+              { "Current cost", GetCost(curr).ToString() }
+            }, false);
+
+          if (GetCost(curr) == 0)
             return curr;
         }
       }
-      return curr;
+      callback(curr, new Dictionary<string, string> {
+              { "Temperature", "0" },
+              { "Current cost", GetCost(curr).ToString() }
+            }, false);
+      return initial;
     }
 
     private double Temperature(int timestep)
@@ -85,58 +91,57 @@ namespace SudokuSolve
       Sudoku neighbor = current.Clone();
       int size = current.GetSize();
 
-      // find two random readable cells
-      int x1 = 0;
+      // find two random readable cells in the same column
+    restart:
+      int colID = r.Next(size);
       int y1 = 0;
-      int x2 = 0;
       int y2 = 0;
-      bool found1 = false;
-      bool found2 = false;
-      while (!(found1 && found2))
+      while (true)
       {
-        if (!found1)
-        {
-          x1 = r.Next(size);
-          y1 = r.Next(size);
-          if (neighbor.IsCellWriteable(x1, y1) &&
-            !(x2 == x1 && y2 == y1))
-            found1 = true;
-        }
-        if (!found2)
-        {
-          x2 = r.Next(size);
-          y2 = r.Next(size);
-          if (neighbor.IsCellWriteable(x2, y2) &&
-            !(x2 == x1 && y2 == y1))
-            found2 = true;
-        }
+        y1 = r.Next(size);
+        if (current.IsCellWriteable(colID, y1))
+          break;
       }
+      // it is possible for there to only be one writeable cell
+      // in the column. if we fail 40 times to find another 
+      // writeable cell in the column, pick another column.
+      int oops = 0;
+      while (true)
+      {
+        y2 = r.Next(size);
+        if (current.IsCellWriteable(colID, y2) && y1 != y2)
+          break;
+        else oops++;
+        if (oops > 40) goto restart;
+      }
+
       // swap the cells
-      char temp = neighbor.GetCell(x1, y1);
-      neighbor.SetCell(x1, y1, neighbor.GetCell(x2, y2));
-      neighbor.SetCell(x2, y2, temp);
+      char temp = neighbor.GetCell(colID, y1);
+      neighbor.SetCell(colID, y1, neighbor.GetCell(colID, y2));
+      neighbor.SetCell(colID, y2, temp);
       return neighbor;
     }
 
-    private int CountErrors(Sudoku s)
+    private int GetCost(Sudoku s)
     {
       int count = 0;
-      var size = s.GetSize();
+      int size = s.GetSize();
       for (int i = 0; i < size; i++)
       {
         for (int j = 0; j < size; j++)
         {
-          if (!s.CheckCellValid(i, j))
-            count++;
+          if (s.CheckRowValid(j, i)) count++;
+          if (s.CheckSquareValid(j, i)) count++;
         }
       }
+
       return count;
     }
 
     private double AcceptanceProbability(Sudoku currState, Sudoku candidateState, double temperature)
     {
-      var currErrors = CountErrors(currState);
-      var candidateErrors = CountErrors(candidateState);
+      var currErrors = GetCost(currState);
+      var candidateErrors = GetCost(candidateState);
 
       if (candidateErrors < currErrors)
       {

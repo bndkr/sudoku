@@ -128,6 +128,8 @@ namespace SudokuSolve
 
     public bool CheckCellValid(int x, int y)
     {
+      if (GetCell(x, y) == EMPTY) return false;
+
       return CheckRowValid(x, y) && CheckColValid(x, y) && CheckSquareValid(x, y);
     }
 
@@ -145,7 +147,7 @@ namespace SudokuSolve
       m_mask[index] = mask;
     }
 
-    private bool CheckRowValid(int x, int y)
+    public bool CheckRowValid(int x, int y)
     {
       // check for matches in the row
       var value = GetCell(x, y);
@@ -159,7 +161,21 @@ namespace SudokuSolve
       return true;
     }
 
-    private bool CheckColValid(int x, int y)
+    public bool IsSolved()
+    {
+      for (int i = 0; i < m_size; i++)
+      {
+        for (int j = 0; j < m_size; j++)
+        {
+          if (!CheckSquareValid(i, j)) return false;
+          if (!CheckRowValid(i, j)) return false;
+          if (!CheckColValid(i, j)) return false;
+        }
+      }
+      return true;
+    }
+
+    public bool CheckColValid(int x, int y)
     {
       // check for matches in the column
       var value = GetCell(x, y);
@@ -173,7 +189,7 @@ namespace SudokuSolve
       return true;
     }
 
-    private bool CheckSquareValid(int x, int y)
+    public bool CheckSquareValid(int x, int y)
     {
       // check for matches in the local square
       var value = GetCell(x, y);

@@ -59,19 +59,22 @@ namespace SudokuSolve
       else
         throw new Exception("unrecognized solving algorithm");
 
-      // TODO: have this work on a seperate thread
-
       var task = await Task.Run(() => solver.Solve(currentSudoku, Callback));
       currentSudoku = solver.Solve(currentSudoku, Callback);
       sudokuDisplay.Text = currentSudoku.ToString();
     }
 
-    private void Callback(Sudoku sudoku, double progress)
+    private void Callback(Sudoku sudoku, Dictionary<string, string> data, bool done)
     {
-      invalid = sudoku.ToString();
+      updateSudokuText = sudoku.ToString();
+      updateData = data;
+      updatedone = done;
     }
 
-    private string invalid = null;
+    private string updateSudokuText = null;
+    private Dictionary<string, string> updateData = null;
+    private bool updatedone = false;
+
     private void label1_Click(object sender, EventArgs e)
     {
 
@@ -79,10 +82,30 @@ namespace SudokuSolve
 
     private void timer1_Tick(object sender, EventArgs e)
     {
-      if (invalid != null)
+      if (updatedone)
       {
-        sudokuDisplay.Text = invalid;
-        invalid = null;
+        if (!currentSudoku.IsSolved())
+        {
+          MessageBox.Show("Could not solve sudoku.");
+        }
+        updatedone = false;
+      }
+        
+      if (updateSudokuText != null)
+      {
+        sudokuDisplay.Text = updateSudokuText;
+        updateSudokuText = null;
+      }
+      if (updateData != null)
+      {
+        var str = new StringBuilder();
+
+        foreach (var pair in updateData)
+        {
+          str.AppendLine($"{pair.Key}: {pair.Value}");
+        }
+        dataBox.Text = str.ToString();
+        updateData = null;
       }
     }
   }
