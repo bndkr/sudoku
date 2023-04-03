@@ -8,9 +8,7 @@ namespace SudokuSolve
 {
   public class SimulatedAnnealingSolver : ISudokuSolver
   {
-
-    private static int MAX_STEPS = 100000;
-    private static int INIT_TEMP = 100;
+    private static int INIT_TEMP = 1000;
 
     public Sudoku Solve(Sudoku initial, UpdateCallback callback)
     {
@@ -44,7 +42,7 @@ namespace SudokuSolve
               if (initial.IsCellWriteable(col, row) && 
                 initial.GetCell(col, row) == Sudoku.EMPTY)
               {
-                initial.SetCell(col, row, c);
+                initial.SetCell(col, row, c, false);
                 break;
               }
             }
@@ -55,9 +53,10 @@ namespace SudokuSolve
       // begin the simulated annealing algorithm
 
       Random r = new Random();
-      double temp;
+      double temp = INIT_TEMP;
       Sudoku curr = initial.Clone();
-      for (int i = 0; i < MAX_STEPS; i++)
+      int i = 0;
+      while (temp > 0.1)
       {
         temp = Temperature(i);
         var neighbor = GenerateNeighbor(curr);
@@ -72,6 +71,7 @@ namespace SudokuSolve
           if (GetCost(curr) == 0)
             return curr;
         }
+        i++;
       }
       callback(curr, new Dictionary<string, string> {
               { "Temperature", "0" },
@@ -82,7 +82,7 @@ namespace SudokuSolve
 
     private double Temperature(int timestep)
     {
-      return INIT_TEMP - ((double) timestep / MAX_STEPS) * INIT_TEMP;
+      return INIT_TEMP * Math.Pow(1.1, -timestep / 10000);
     }
 
     private Sudoku GenerateNeighbor(Sudoku current)
@@ -117,12 +117,12 @@ namespace SudokuSolve
 
       // swap the cells
       char temp = neighbor.GetCell(colID, y1);
-      neighbor.SetCell(colID, y1, neighbor.GetCell(colID, y2));
-      neighbor.SetCell(colID, y2, temp);
+      neighbor.SetCell(colID, y1, neighbor.GetCell(colID, y2), false);
+      neighbor.SetCell(colID, y2, temp, false);
       return neighbor;
     }
 
-    private int GetCost(Sudoku s)
+    public int GetCost(Sudoku s)
     {
       int count = 0;
       int size = s.GetSize();

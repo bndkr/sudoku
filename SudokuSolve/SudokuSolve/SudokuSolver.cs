@@ -15,4 +15,23 @@ namespace SudokuSolve
   {
     Sudoku Solve(Sudoku initial, UpdateCallback callback);
   }
+
+  public abstract class SudokuCellSolver : ISudokuSolver
+  {
+
+    Sudoku board;
+    SudokuCellSolver(Sudoku board)
+    {
+      this.board = board;
+    }
+
+    public Sudoku Solve(Sudoku initial, UpdateCallback callback)
+    {
+      throw new NotImplementedException();
+    }
+
+    public abstract void SolveNakedSingles();
+
+
+  }
 }

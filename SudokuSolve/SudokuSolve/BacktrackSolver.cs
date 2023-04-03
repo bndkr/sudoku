@@ -24,7 +24,7 @@ namespace SudokuSolve
         if (puzzle.IsCellWriteable(x, y))
         {
           if (puzzle.GetCell(x, y) == Sudoku.EMPTY)
-            puzzle.SetCell(x, y, possibleChrs[0]);
+            puzzle.SetCell(x, y, possibleChrs[0], false);
 
           if (puzzle.CheckCellValid(x, y) && !backtracking)
           {
@@ -37,7 +37,7 @@ namespace SudokuSolve
             while (incremented != Sudoku.EMPTY)
             {
               incremented = GetIncrementCell(puzzle, x, y);
-              puzzle.SetCell(x, y, incremented);
+              puzzle.SetCell(x, y, incremented, false);
               if (puzzle.CheckCellValid(x, y)) break;
             }
 
