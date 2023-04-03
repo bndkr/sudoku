@@ -105,14 +105,13 @@ namespace SudokuTest
       Assert.IsTrue(BacktrackSolver.GetIncrementCell(s, 3, 0) == Sudoku.EMPTY);
     }
 
-    public void UpdateCallback(Sudoku sudoku, Dictionary<string, string> processingData, bool done) {}
+    public void UpdateCallback(Sudoku sudoku, Dictionary<string, string> processingData, bool done) { }
 
     [TestMethod]
-    public void TestBacktrackSolve()
+    public void TestBacktrackSolve1()
     {
       string[] lines =
       {
-
         "9",
         "1 2 3 4 5 6 7 8 9",
         "4 9 - 1 3 6 7 - 8",
@@ -139,6 +138,42 @@ namespace SudokuTest
       s.AppendLine("1 8 6 9 7 3 4 2 5");
       s.AppendLine("2 4 7 6 5 1 8 3 9");
       s.AppendLine("3 5 9 4 8 2 6 7 1");
+      string expected = s.ToString();
+
+      var actual = result.ToString();
+      Assert.IsTrue(expected == actual, $"{expected} is not equal to {actual}");
+    }
+    [TestMethod]
+    public void TestBacktrackSolve2()
+    {
+      string[] lines =
+      {
+          "9",
+          "1 2 3 4 5 6 7 8 9",
+          "8 - - 6 2 - - - 7",
+          "- 5 1 7 - - - 4 9",
+          "6 - - - - - - - -",
+          "- 3 - - 6 5 4 2 -",
+          "9 8 - - 4 - - 7 5",
+          "- 4 2 8 1 - - 3 -",
+          "- - - - - - - - 1",
+          "3 1 - - - 6 8 9 -",
+          "7 - - - 5 8 - - 4"
+        };
+      var sudoku = Sudoku.FromStrings(lines);
+      var solver = new BacktrackSolver();
+      var result = solver.Solve(sudoku, UpdateCallback);
+
+      var s = new StringBuilder();
+      s.AppendLine("8 9 3 6 2 4 5 1 7");
+      s.AppendLine("2 5 1 7 8 3 6 4 9");
+      s.AppendLine("6 7 4 5 9 1 2 8 3");
+      s.AppendLine("1 3 7 9 6 5 4 2 8");
+      s.AppendLine("9 8 6 3 4 2 1 7 5");
+      s.AppendLine("5 4 2 8 1 7 9 3 6");
+      s.AppendLine("4 6 8 2 3 9 7 5 1");
+      s.AppendLine("3 1 5 4 7 6 8 9 2");
+      s.AppendLine("7 2 9 1 5 8 3 6 4");
       string expected = s.ToString();
 
       var actual = result.ToString();

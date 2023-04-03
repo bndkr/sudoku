@@ -34,22 +34,36 @@ namespace SudokuSolve
           {
             // increment it until it's valid or it overflows
             char incremented = puzzle.GetCell(x, y);
-            while (incremented != Sudoku.EMPTY)
+            bool valid = false;
+            bool overflowed = false;
+            while (!valid && !overflowed)
             {
               incremented = GetIncrementCell(puzzle, x, y);
+              if (incremented == Sudoku.EMPTY)
+              {
+                overflowed = true;
+                break;
+              }
               puzzle.SetCell(x, y, incremented, false);
-              if (puzzle.CheckCellValid(x, y)) break;
+              valid = puzzle.CheckCellValid(x, y);
             }
 
-            if (incremented == Sudoku.EMPTY)
+            if (overflowed)
             {
               idx--;
+              puzzle.SetCell(x, y, Sudoku.EMPTY, false);
               backtracking = true;
+              continue;
             }
-            else
+            else if (valid)
             {
               backtracking = false;
               idx++;
+              continue;
+            }
+            else
+            {
+              throw new Exception("not sure what to do here");
             }
           }
         }
