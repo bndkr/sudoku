@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SudokuSolve
 {
-  public class SimulatedAnnealingSolver : ISudokuSolver
+  public class SimulatedAnnealingSolver
   {
     private static int INIT_TEMP = 1000;
 

@@ -37,8 +37,6 @@
       this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
       this.sudokuDisplay = new System.Windows.Forms.TextBox();
       this.button1 = new System.Windows.Forms.Button();
-      this.radioBacktracking = new System.Windows.Forms.RadioButton();
-      this.radioSimulatedAnnealing = new System.Windows.Forms.RadioButton();
       this.timer1 = new System.Windows.Forms.Timer(this.components);
       this.dataBox = new System.Windows.Forms.TextBox();
       this.resetButton = new System.Windows.Forms.Button();
@@ -119,29 +117,6 @@
       this.button1.UseVisualStyleBackColor = true;
       this.button1.Click += new System.EventHandler(this.button1_Click);
       // 
-      // radioBacktracking
-      // 
-      this.radioBacktracking.AutoSize = true;
-      this.radioBacktracking.Checked = true;
-      this.radioBacktracking.Location = new System.Drawing.Point(13, 53);
-      this.radioBacktracking.Name = "radioBacktracking";
-      this.radioBacktracking.Size = new System.Drawing.Size(88, 17);
-      this.radioBacktracking.TabIndex = 3;
-      this.radioBacktracking.TabStop = true;
-      this.radioBacktracking.Text = "Backtracking";
-      this.radioBacktracking.UseVisualStyleBackColor = true;
-      // 
-      // radioSimulatedAnnealing
-      // 
-      this.radioSimulatedAnnealing.AutoSize = true;
-      this.radioSimulatedAnnealing.Location = new System.Drawing.Point(13, 76);
-      this.radioSimulatedAnnealing.Name = "radioSimulatedAnnealing";
-      this.radioSimulatedAnnealing.Size = new System.Drawing.Size(121, 17);
-      this.radioSimulatedAnnealing.TabIndex = 4;
-      this.radioSimulatedAnnealing.TabStop = true;
-      this.radioSimulatedAnnealing.Text = "Simulated Annealing";
-      this.radioSimulatedAnnealing.UseVisualStyleBackColor = true;
-      // 
       // timer1
       // 
       this.timer1.Enabled = true;
@@ -172,8 +147,6 @@
       this.ClientSize = new System.Drawing.Size(550, 395);
       this.Controls.Add(this.resetButton);
       this.Controls.Add(this.dataBox);
-      this.Controls.Add(this.radioSimulatedAnnealing);
-      this.Controls.Add(this.radioBacktracking);
       this.Controls.Add(this.button1);
       this.Controls.Add(this.sudokuDisplay);
       this.Controls.Add(this.menuStrip1);
@@ -197,8 +170,6 @@
     private System.Windows.Forms.OpenFileDialog openFileDialog1;
     private System.Windows.Forms.TextBox sudokuDisplay;
     private System.Windows.Forms.Button button1;
-    private System.Windows.Forms.RadioButton radioBacktracking;
-    private System.Windows.Forms.RadioButton radioSimulatedAnnealing;
     private System.Windows.Forms.Timer timer1;
     private System.Windows.Forms.TextBox dataBox;
     private System.Windows.Forms.Button resetButton;

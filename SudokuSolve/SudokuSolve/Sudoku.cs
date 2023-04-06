@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Security.Policy;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,14 +23,16 @@ namespace SudokuSolve
       this.writeable = true;
       CandidateInit();
     }
-
     public Cell(char[] possibleChars, char value)
     {
+      Debug.Assert(value != Sudoku.EMPTY);
       this.possibleChars = possibleChars;
       this.value = value;
       this.writeable = false;
       CandidateInit();
     }
+
+    public List<char> GetCandidates() { return candidates; }
 
     private void CandidateInit()
     {
@@ -41,15 +42,21 @@ namespace SudokuSolve
         candidates.Add(c);
       }
     }
-
+    /* Writes a value to the cell. If solved = true, indicates the new 
+     * value is fixed and cannot be changed, otherwise the cell remains
+     * mutable.
+     */
     public bool Write(char toWrite, bool solved)
     {
       if ((possibleChars.Any(c => c == toWrite) || toWrite == Sudoku.EMPTY) && writeable)
       {
         value = toWrite;
-        candidates.Clear();
-        writeable = !solved;
-        return true;
+        if (solved)
+        {
+          writeable = false;
+          candidates.Clear();
+        }
+          return true;
       }
       return false;
     }
@@ -57,6 +64,11 @@ namespace SudokuSolve
     public bool IsWriteable()
     {
       return writeable;
+    }
+
+    public override string ToString()
+    {
+      return value.ToString();
     }
 
     public char Read()
@@ -121,6 +133,12 @@ namespace SudokuSolve
       }
     }
 
+    private int GetIndex(int x, int y)
+    {
+      return x + (y * m_size);
+    }
+
+ 
     public char[] GetPossibleChars()
     {
       return m_possibleChars;
@@ -130,7 +148,7 @@ namespace SudokuSolve
     {
       checkCellBoundaries(x, y);
 
-      int index = x + (y * m_size);
+      int index = GetIndex(x, y);
       return m_grid[index].Read();
     }
 
@@ -143,8 +161,16 @@ namespace SudokuSolve
     {
       checkCellBoundaries(x, y);
 
-      int index = x + (y * m_size);
+      int index = GetIndex(x, y);
       return m_grid[index].IsWriteable();
+    }
+
+    public bool RemoveCandidate(int x, int y, char candidate)
+    {
+      checkCellBoundaries(x, y);
+
+      int index = GetIndex(x, y);
+      return m_grid[index].RemoveCandidate(candidate);
     }
 
     public Sudoku Clone()
@@ -176,7 +202,7 @@ namespace SudokuSolve
       {
         if (IsCellWriteable(x, y))
         {
-          int index = x + (y * m_size);
+          int index = GetIndex(x, y);
           return m_grid[index].Write(value, solved);
         }
       }
@@ -221,14 +247,39 @@ namespace SudokuSolve
     {
       // check for matches in the row
       var value = GetCell(x, y);
-      for (int i = 0; i < m_size; i++)
+      if (value == EMPTY) return false;
+      int matches = 0;
+      foreach (Cell c in IterateRowCells(y))
       {
-        if (i != x && GetCell(i, y) == value)
-        {
-          return false;
-        }
+        if (value == c.Read()) matches++;
       }
-      return true;
+      return matches == 1;
+    }
+    public bool CheckColValid(int x, int y)
+    {
+      // check for matches in the column
+      var value = GetCell(x, y);
+      if (value == EMPTY) return false;
+      int matches = 0;
+      foreach (Cell c in IterateColCells(x))
+      {
+        if (value == c.Read()) matches++;
+      }
+      return matches == 1;
+    }
+    public bool CheckSquareValid(int x, int y)
+    {
+      // check for matches in the local square
+      var value = GetCell(x, y);
+      if (value == EMPTY) return false;
+      int matches = 0;
+      foreach (Cell c in IterateBox(x, y))
+      {
+        char v = c.Read();
+        if (value == v) matches++;
+      }
+      // TODO: investigate why 'matches' can be 0 and be valid
+      return matches < 2;
     }
 
     public bool IsSolved()
@@ -237,7 +288,7 @@ namespace SudokuSolve
       {
         for (int j = 0; j < m_size; j++)
         {
-          if (m_grid[i + (j * m_size)].Read() == EMPTY) return false; 
+          if (m_grid[i + (j * m_size)].Read() == EMPTY) return false;
           if (!CheckSquareValid(i, j)) return false;
           if (!CheckRowValid(i, j)) return false;
           if (!CheckColValid(i, j)) return false;
@@ -245,26 +296,25 @@ namespace SudokuSolve
       }
       return true;
     }
-
-    public bool CheckColValid(int x, int y)
+    public IEnumerable<Cell> IterateRowCells(int y)
     {
-      // check for matches in the column
-      var value = GetCell(x, y);
       for (int i = 0; i < m_size; i++)
       {
-        if (i != y && GetCell(x, i) == value)
-        {
-          return false;
-        }
+        yield return m_grid[GetIndex(i, y)];
       }
-      return true;
     }
 
-    public bool CheckSquareValid(int x, int y)
+    public IEnumerable<Cell> IterateColCells(int x)
     {
-      // check for matches in the local square
-      var value = GetCell(x, y);
-      int squareSide = (int) System.Math.Sqrt(m_size);
+      for (int i = 0; i < m_size; i++)
+      {
+        yield return m_grid[GetIndex(x, i)];
+      }
+    }
+
+    public IEnumerable<Cell> IterateBox(int x, int y)
+    {
+      int squareSide = (int)System.Math.Sqrt(m_size);
       int squareCornerX = x / squareSide;
       int squareCornerY = y / squareSide;
 
@@ -272,14 +322,11 @@ namespace SudokuSolve
       {
         for (int j = squareCornerY * squareSide; j < squareSide; j++)
         {
-          if (!(x == i && y == j) && GetCell(i, j) == value)
-          {
-            return false;
-          }
+          yield return m_grid[GetIndex(i, j)];
         }
       }
-      return true;
     }
+
     private char[] m_possibleChars;
     private Cell[] m_grid; 
     private int m_size;

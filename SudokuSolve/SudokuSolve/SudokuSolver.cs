@@ -6,32 +6,34 @@ using System.Threading.Tasks;
 
 namespace SudokuSolve
 {
-
   // this should be called anytime a solver updates the grid state
   // so it can be displayed to the user as the alogorithm runs
   public delegate void UpdateCallback(Sudoku sudoku, Dictionary<string, string> processingData, bool done);
 
-  public interface ISudokuSolver
+  public struct SudokuSolveResult
   {
-    Sudoku Solve(Sudoku initial, UpdateCallback callback);
+    public bool success;
+    public Sudoku board;
   }
 
-  public abstract class SudokuCellSolver : ISudokuSolver
+  public abstract class SudokuSolver
   {
-
-    Sudoku board;
-    SudokuCellSolver(Sudoku board)
+    protected Sudoku board;
+    protected UpdateCallback callback;
+    public SudokuSolver(Sudoku board, UpdateCallback callback)
     {
       this.board = board;
+      this.callback = callback;
     }
 
-    public Sudoku Solve(Sudoku initial, UpdateCallback callback)
+    public SudokuSolveResult Solve()
     {
-      throw new NotImplementedException();
+      SolveNakedSingles();
+      SolveByGuessing();
+      return new SudokuSolveResult { success = board.IsSolved(), board = board };
     }
-
     public abstract void SolveNakedSingles();
 
-
+    public abstract void SolveByGuessing();
   }
 }

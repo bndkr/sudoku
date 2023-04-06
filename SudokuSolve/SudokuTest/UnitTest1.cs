@@ -125,9 +125,9 @@ namespace SudokuTest
         "3 - 9 4 8 - - 7 -",
       };
       var sudoku = Sudoku.FromStrings(lines);
-      var solver = new BacktrackSolver();
-      var result = solver.Solve(sudoku, UpdateCallback);
-
+      var solver = new BacktrackSolver(sudoku, UpdateCallback);
+      var result = solver.Solve().board;
+      
       var s = new StringBuilder();
       s.AppendLine("4 9 2 1 3 6 7 5 8");
       s.AppendLine("7 6 3 5 4 8 1 9 2");
@@ -143,41 +143,96 @@ namespace SudokuTest
       var actual = result.ToString();
       Assert.IsTrue(expected == actual, $"{expected} is not equal to {actual}");
     }
+
     [TestMethod]
-    public void TestBacktrackSolve2()
+    public void TestIterators()
     {
-      string[] lines =
+      var sudoku = Sudoku.FromStrings(new string[]
+        {
+        "4",
+        "1 2 3 4",
+        "1 2 3 4",
+        "4 3 2 1",
+        "4 3 2 1",
+        "1 2 3 4",
+        });
+
+      var expectedRows = new List<char[]>();
+      expectedRows.Add(new char[4] { '1', '2', '3', '4' });
+      expectedRows.Add(new char[4] { '4', '3', '2', '1' });
+      expectedRows.Add(new char[4] { '4', '3', '2', '1' });
+      expectedRows.Add(new char[4] { '1', '2', '3', '4' });
+
+      var expectedCols = new List<char[]>();
+
+      expectedCols.Add(new char[4] { '1', '4', '4', '1' });
+      expectedCols.Add(new char[4] { '2', '3', '3', '2' });
+      expectedCols.Add(new char[4] { '3', '2', '2', '3' });
+      expectedCols.Add(new char[4] { '4', '1', '1', '4' });
+
+      var expectedBoxs = new List<char[]>();
+      expectedBoxs.Add(new char[4] { '1', '4', '2', '3' });
+      expectedBoxs.Add(new char[4] { '3', '2', '4', '1' });
+      expectedBoxs.Add(new char[4] { '4', '1', '3', '2' });
+      expectedBoxs.Add(new char[4] { '2', '3', '1', '4' });
+
+      for (int i = 0; i < 4; i++)
       {
-          "9",
-          "1 2 3 4 5 6 7 8 9",
-          "8 - - 6 2 - - - 7",
-          "- 5 1 7 - - - 4 9",
-          "6 - - - - - - - -",
-          "- 3 - - 6 5 4 2 -",
-          "9 8 - - 4 - - 7 5",
-          "- 4 2 8 1 - - 3 -",
-          "- - - - - - - - 1",
-          "3 1 - - - 6 8 9 -",
-          "7 - - - 5 8 - - 4"
-        };
-      var sudoku = Sudoku.FromStrings(lines);
-      var solver = new BacktrackSolver();
-      var result = solver.Solve(sudoku, UpdateCallback);
+        int idx = 0;
+        foreach (var cell in sudoku.IterateRowCells(i))
+        {
+          Assert.IsTrue(cell.Read() == expectedRows[i][idx],
+            $"row failure: {cell.Read()} != {expectedRows[i][idx]}");
+          idx++;
+        }
+      }
 
-      var s = new StringBuilder();
-      s.AppendLine("8 9 3 6 2 4 5 1 7");
-      s.AppendLine("2 5 1 7 8 3 6 4 9");
-      s.AppendLine("6 7 4 5 9 1 2 8 3");
-      s.AppendLine("1 3 7 9 6 5 4 2 8");
-      s.AppendLine("9 8 6 3 4 2 1 7 5");
-      s.AppendLine("5 4 2 8 1 7 9 3 6");
-      s.AppendLine("4 6 8 2 3 9 7 5 1");
-      s.AppendLine("3 1 5 4 7 6 8 9 2");
-      s.AppendLine("7 2 9 1 5 8 3 6 4");
-      string expected = s.ToString();
+      for (int i = 0; i < 4; i++)
+      {
+        int idx = 0;
+        foreach (var cell in sudoku.IterateColCells(i))
+        {
+          Assert.IsTrue(cell.Read() == expectedCols[i][idx],
+            $"col failure: {cell.Read()} != {expectedCols[i][idx]}");
+          idx++;
+        }
+      }
 
-      var actual = result.ToString();
-      Assert.IsTrue(expected == actual, $"{expected} is not equal to {actual}");
+      for (int i = 0; i < 4; i++)
+      {
+        int idx = 0;
+        foreach (var cell in sudoku.IterateBox(i * 2, i * 2))
+        {
+          Assert.IsTrue(cell.Read() == expectedBoxs[i][idx],
+            $"box failure[{idx}]: {cell.Read()} != {expectedBoxs[i][idx]}");
+          idx++;
+        }
+      }
+    }
+    [TestMethod]
+    public void TestCell()
+    {
+      Cell c = new Cell(new char[4] { '1', '2', '3', '4' });
+      Assert.IsTrue(c.Read() == Sudoku.EMPTY);
+      c.Write('1', false);
+      Assert.IsTrue(c.GetCandidates().Count == 4);
+      Assert.IsTrue(c.Read() == '1');
+      c.Write('2', true);
+      Assert.IsTrue(c.Read() == '2');
+      c.Write('3', false); // not allowed because previous write operation made cell read-only
+      Assert.IsTrue(c.Read() == '2');
+      Assert.IsTrue(c.GetCandidates().Count == 0);
+
+      Cell d = new Cell(new char[4] { '1', '2', '3', '4' });
+      d.RemoveCandidate('4');
+      Assert.IsTrue(d.GetCandidates().Count == 3);
+      d.RemoveCandidate('3');
+      Assert.IsTrue(d.GetCandidates().Count == 2);
+      Assert.IsTrue(d.IsWriteable() == true);
+      d.RemoveCandidate('2');
+      Assert.IsTrue(d.GetCandidates().Count == 0);
+      Assert.IsTrue(d.Read() == '1');
+      Assert.IsTrue(d.IsWriteable() == false);
     }
   }
 }

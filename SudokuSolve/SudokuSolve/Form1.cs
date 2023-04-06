@@ -51,17 +51,9 @@ namespace SudokuSolve
     {
       if (currentSudoku == null) return;
 
-      ISudokuSolver solver;
-      if (radioBacktracking.Checked)
-        solver = new BacktrackSolver();
-      else if (radioSimulatedAnnealing.Checked)
-        solver = new SimulatedAnnealingSolver();
-      else
-        throw new Exception("unrecognized solving algorithm");
+      SudokuSolver solver = new BacktrackSolver(currentSudoku, Callback);
 
-      var task = await Task.Run(() => solver.Solve(currentSudoku, Callback));
-      currentSudoku = solver.Solve(currentSudoku, Callback);
-      sudokuDisplay.Text = currentSudoku.ToString();
+      var task = await Task.Run(() => solver.Solve());
     }
 
     private void Callback(Sudoku sudoku, Dictionary<string, string> data, bool done)
