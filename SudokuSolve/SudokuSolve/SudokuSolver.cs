@@ -28,7 +28,7 @@ namespace SudokuSolve
 
     public SudokuSolveResult Solve()
     {
-      SolveNakedSingles();
+      // SolveNakedSingles();
       SolveByGuessing();
       return new SudokuSolveResult { success = board.IsSolved(), board = board };
     }

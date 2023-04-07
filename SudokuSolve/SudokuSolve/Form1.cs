@@ -76,11 +76,11 @@ namespace SudokuSolve
     {
       if (updatedone)
       {
-        if (!currentSudoku.IsSolved())
-        {
-          MessageBox.Show("Could not solve sudoku.");
-        }
-        updatedone = false;
+        // if (!currentSudoku.IsSolved())
+        // {
+        //   MessageBox.Show("Could not solve sudoku.");
+        // }
+        // updatedone = false;
       }
         
       if (updateSudokuText != null)

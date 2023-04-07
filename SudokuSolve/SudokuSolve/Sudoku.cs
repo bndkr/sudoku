@@ -279,6 +279,7 @@ namespace SudokuSolve
         if (value == v) matches++;
       }
       // TODO: investigate why 'matches' can be 0 and be valid
+      // Debug.Assert(matches != 0);
       return matches < 2;
     }
 
@@ -318,9 +319,12 @@ namespace SudokuSolve
       int squareCornerX = x / squareSide;
       int squareCornerY = y / squareSide;
 
-      for (int i = squareCornerX * squareSide; i < squareSide; i++)
+      int xLim = (squareCornerX + 1) * squareSide;
+      int yLim = (squareCornerY + 1) * squareSide;
+
+      for (int i = squareCornerX * squareSide; i < xLim; i++)
       {
-        for (int j = squareCornerY * squareSide; j < squareSide; j++)
+        for (int j = squareCornerY * squareSide; j < yLim; j++)
         {
           yield return m_grid[GetIndex(i, j)];
         }
