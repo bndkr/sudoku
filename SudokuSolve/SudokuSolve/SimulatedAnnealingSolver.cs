@@ -24,7 +24,7 @@ namespace SudokuSolve
         {
           if (!initial.IsCellWriteable(col, row))
           {
-            colRollup.Add(initial.GetCell(col, row));
+            colRollup.Add(initial.GetCellValue(col, row));
           }
         }
         remainingNumsInRow.Add(colRollup);
@@ -40,7 +40,7 @@ namespace SudokuSolve
             for (int row = 0; row < size; row++)
             {
               if (initial.IsCellWriteable(col, row) && 
-                initial.GetCell(col, row) == Sudoku.EMPTY)
+                initial.GetCellValue(col, row) == Sudoku.EMPTY)
               {
                 initial.SetCell(col, row, c, false);
                 break;
@@ -116,8 +116,8 @@ namespace SudokuSolve
       }
 
       // swap the cells
-      char temp = neighbor.GetCell(colID, y1);
-      neighbor.SetCell(colID, y1, neighbor.GetCell(colID, y2), false);
+      char temp = neighbor.GetCellValue(colID, y1);
+      neighbor.SetCell(colID, y1, neighbor.GetCellValue(colID, y2), false);
       neighbor.SetCell(colID, y2, temp, false);
       return neighbor;
     }

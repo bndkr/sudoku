@@ -28,12 +28,19 @@ namespace SudokuSolve
 
     public SudokuSolveResult Solve()
     {
-      // SolveNakedSingles();
+      SolveNakedSingles();
+      SolveNakedPairs();
+      SolveNakedPairs();
+      SolveNakedPairs();
       SolveByGuessing();
       return new SudokuSolveResult { success = board.IsSolved(), board = board };
     }
+
+    public Sudoku GetBoard() { return board; }
     public abstract void SolveNakedSingles();
 
     public abstract void SolveByGuessing();
+
+    public abstract void SolveNakedPairs();
   }
 }

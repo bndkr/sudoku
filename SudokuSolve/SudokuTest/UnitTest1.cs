@@ -1,4 +1,5 @@
 using SudokuSolve;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -274,6 +275,29 @@ namespace SudokuTest
       var solver = new BacktrackSolver(sudoku, UpdateCallback);
       sudoku = solver.Solve().board;
       Assert.IsTrue(sudoku.ToString() == expecteSudoku.ToString()); ;
+    }
+
+    [TestMethod]
+    public void TestNakedPair()
+    {
+      var s = Sudoku.FromStrings(new string[]
+      {
+        "9",
+        "1 2 3 4 5 6 7 8 9",
+        "4 - - - - - 9 3 8",
+        "- 3 2 - 9 4 1 - -",
+        "- 9 5 3 - - 2 4 -",
+        "3 7 - 6 - 9 - - 4",
+        "5 2 9 - - 1 6 7 3",
+        "6 - 4 7 - 3 - 9 -",
+        "9 5 7 - - 8 3 - -",
+        "- - 3 9 - - 4 - -",
+        "2 4 - - 3 - 7 - 9"
+      });
+
+      var solver = new BacktrackSolver(s, UpdateCallback);
+      var result = solver.Solve().board;
+
     }
   }
 }

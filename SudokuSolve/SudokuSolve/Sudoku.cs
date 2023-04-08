@@ -98,6 +98,8 @@ namespace SudokuSolve
      */
     public bool RemoveCandidate(char candidate)
     {
+      if (!writeable) return false;
+        
       if (!candidates.Contains(candidate)) return false;
       candidates.Remove(candidate);
       if (candidates.Count == 1)
@@ -144,12 +146,25 @@ namespace SudokuSolve
       return m_possibleChars;
     }
 
-    public char GetCell(int x, int y)
+    public char GetCellValue(int x, int y)
     {
       checkCellBoundaries(x, y);
 
       int index = GetIndex(x, y);
       return m_grid[index].Read();
+    }
+
+    public Cell GetCell(int x, int y)
+    {
+      checkCellBoundaries(x, y);
+      return m_grid[GetIndex(x, y)];
+    }
+
+    public List<char> GetCellCandidates(int x, int y)
+    {
+      checkCellBoundaries(x, y);
+
+      return m_grid[GetIndex(x, y)].GetCandidates();
     }
 
     public int GetSize()
@@ -220,7 +235,7 @@ namespace SudokuSolve
       {
         for (int j = 0; j < m_size; j++)
         {
-          str.Append(GetCell(j, i));
+          str.Append(GetCellValue(j, i));
           if (j != m_size - 1) str.Append(" ");
         }
         str.AppendLine();
@@ -230,7 +245,7 @@ namespace SudokuSolve
 
     public bool CheckCellValid(int x, int y)
     {
-      if (GetCell(x, y) == EMPTY) return false;
+      if (GetCellValue(x, y) == EMPTY) return false;
 
       return CheckRowValid(x, y) && CheckColValid(x, y) && CheckSquareValid(x, y);
     }
@@ -246,7 +261,7 @@ namespace SudokuSolve
     public bool CheckRowValid(int x, int y)
     {
       // check for matches in the row
-      var value = GetCell(x, y);
+      var value = GetCellValue(x, y);
       if (value == EMPTY) return false;
       int matches = 0;
       foreach (Cell c in IterateRowCells(y))
@@ -258,7 +273,7 @@ namespace SudokuSolve
     public bool CheckColValid(int x, int y)
     {
       // check for matches in the column
-      var value = GetCell(x, y);
+      var value = GetCellValue(x, y);
       if (value == EMPTY) return false;
       int matches = 0;
       foreach (Cell c in IterateColCells(x))
@@ -270,7 +285,7 @@ namespace SudokuSolve
     public bool CheckSquareValid(int x, int y)
     {
       // check for matches in the local square
-      var value = GetCell(x, y);
+      var value = GetCellValue(x, y);
       if (value == EMPTY) return false;
       int matches = 0;
       foreach (Cell c in IterateBox(x, y))
@@ -315,6 +330,7 @@ namespace SudokuSolve
 
     public IEnumerable<Cell> IterateBox(int x, int y)
     {
+      checkCellBoundaries(x, y);
       int squareSide = (int)System.Math.Sqrt(m_size);
       int squareCornerX = x / squareSide;
       int squareCornerY = y / squareSide;
@@ -328,6 +344,44 @@ namespace SudokuSolve
         {
           yield return m_grid[GetIndex(i, j)];
         }
+      }
+    }
+
+    /* Iterates through all cells in a given cell's neighborhood, 
+     * i.e. cells in the same row, column, or box. Does not include
+     * the original cell.
+     */
+    public IEnumerable<Cell> IterateNeighborhood(int x, int y)
+    {
+      checkCellBoundaries(x, y);
+      var list = new List<Cell>();
+      Cell curr = m_grid[GetIndex(x, y)];
+
+      foreach (var c in IterateRowCells(y))
+      {
+        if (c != curr && !list.Contains(c))
+        {
+          list.Add(c);
+        }
+      }
+      foreach (var c in IterateColCells(x))
+      {
+        if (c != curr && !list.Contains(c))
+        {
+          list.Add(c);
+        }
+      }
+      foreach (var c in IterateBox(x, y))
+      {
+        if (c != curr && !list.Contains(c))
+        {
+          list.Add(c);
+        }
+      }
+      
+      foreach (var item in list)
+      {
+        yield return item;
       }
     }
 

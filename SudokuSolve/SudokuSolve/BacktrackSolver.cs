@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Windows.Forms;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 
 namespace SudokuSolve
 {
@@ -13,7 +10,7 @@ namespace SudokuSolve
     {
       char[] possibleChars = s.GetPossibleChars();
       int size = s.GetSize();
-      char cell = s.GetCell(x, y);
+      char cell = s.GetCellValue(x, y);
       if (cell == Sudoku.EMPTY)
         return possibleChars[0];
 
@@ -38,9 +35,9 @@ namespace SudokuSolve
       {
         for (int row = 0; row < size; row++)
         {
-          if (!board.IsCellWriteable(col, row) && board.GetCell(col, row) != Sudoku.EMPTY)
+          if (!board.IsCellWriteable(col, row) && board.GetCellValue(col, row) != Sudoku.EMPTY)
           {
-            char value = board.GetCell(col, row);
+            char value = board.GetCellValue(col, row);
 
             // remove candidates from the same row
             foreach (var cell in board.IterateRowCells(row))
@@ -66,6 +63,96 @@ namespace SudokuSolve
       callback(board, new Dictionary<string, string> { }, false);
     }
 
+    public override void SolveNakedPairs()
+    {
+      int size = board.GetSize();
+      for (int col = 0; col < size; col++)
+      {
+        for (int row = 0; row < size; row++)
+        {
+          if (board.IsCellWriteable(col, row))
+          {
+            var candidates = board.GetCellCandidates(col, row);
+            var curr = board.GetCell(col, row);
+
+            if (candidates.Count == 2)
+            {
+              char candidate1 = candidates[0];
+              char candidate2 = candidates[1];
+
+              // look for other cells in the same row with those
+              // exact same 2 candidates
+              foreach (var cell in board.IterateRowCells(row))
+              {
+                if (cell != curr)
+                {
+                  var otherCandidates = cell.GetCandidates();
+                  if (otherCandidates.Count == 2 &&
+                    otherCandidates.Contains(candidate1) &&
+                    otherCandidates.Contains(candidate2))
+                  {
+                    // remove candidates from other cells in the row
+                    foreach (var otherCell in board.IterateRowCells(row))
+                    {
+                      if (otherCell != cell && otherCell != curr)
+                      {
+                        otherCell.RemoveCandidate(candidate1);
+                        otherCell.RemoveCandidate(candidate2);
+                      }
+                    }
+                  }
+                }
+              }
+
+              foreach (var cell in board.IterateColCells(col))
+              {
+                if (cell != curr)
+                {
+                  var otherCandidates = cell.GetCandidates();
+                  if (otherCandidates.Count == 2 &&
+                    otherCandidates.Contains(candidate1) &&
+                    otherCandidates.Contains(candidate2))
+                  {
+                    // remove candidates from other cells in the col
+                    foreach (var otherCell in board.IterateColCells(col))
+                    {
+                      if (otherCell != cell && otherCell != curr)
+                      {
+                        otherCell.RemoveCandidate(candidate1);
+                        otherCell.RemoveCandidate(candidate2);
+                      }
+                    }
+                  }
+                }
+              }
+
+              foreach (var cell in board.IterateBox(col, row))
+              {
+                if (cell != curr)
+                {
+                  var otherCandidates = cell.GetCandidates();
+                  if (otherCandidates.Count == 2 &&
+                    otherCandidates.Contains(candidate1) &&
+                    otherCandidates.Contains(candidate2))
+                  {
+                    // remove candidates from other cells in the box
+                    foreach (var otherCell in board.IterateBox(col, row))
+                    {
+                      if (otherCell != cell && otherCell != curr)
+                      {
+                        otherCell.RemoveCandidate(candidate1);
+                        otherCell.RemoveCandidate(candidate2);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     public override void SolveByGuessing()
     {
       int idx = 0;
@@ -83,7 +170,7 @@ namespace SudokuSolve
 
         if (board.IsCellWriteable(x, y))
         {
-          if (board.GetCell(x, y) == Sudoku.EMPTY)
+          if (board.GetCellValue(x, y) == Sudoku.EMPTY)
             board.SetCell(x, y, possibleChrs[0], false);
 
           if (board.CheckCellValid(x, y) && !backtracking)
@@ -93,7 +180,7 @@ namespace SudokuSolve
           else
           {
             // increment it until it's valid or it overflows
-            char incremented = board.GetCell(x, y);
+            char incremented = board.GetCellValue(x, y);
             bool valid = false;
             bool overflowed = false;
             while (!valid && !overflowed)
