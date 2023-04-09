@@ -243,6 +243,41 @@ namespace SudokuSolve
       return str.ToString();
     }
 
+    public bool ToFile(string filename)
+    {
+      try
+      {
+        var lines = new List<string>();
+        lines.Add(m_size.ToString());
+        string possibleChars = "";
+        foreach (var item in m_possibleChars)
+        {
+          possibleChars += item;
+          if (item != m_possibleChars[m_possibleChars.Length - 1])
+          {
+            possibleChars += ' ';
+          }
+        }
+        lines.Add(possibleChars);
+        string board = this.ToString();
+        board = board.Replace("\r", String.Empty);
+        string[] boardLines = board.Split('\n');
+
+        foreach (var item in boardLines)
+        {
+          lines.Add(item);
+        }
+
+        System.IO.File.WriteAllLines(filename, lines);
+               
+        return true;
+      }
+      catch
+      {
+        return false;
+      }
+    }
+
     public bool CheckCellValid(int x, int y)
     {
       if (GetCellValue(x, y) == EMPTY) return false;

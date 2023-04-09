@@ -31,7 +31,6 @@
       this.components = new System.ComponentModel.Container();
       this.menuStrip1 = new System.Windows.Forms.MenuStrip();
       this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-      this.newSudokuToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
@@ -39,8 +38,13 @@
       this.button1 = new System.Windows.Forms.Button();
       this.timer1 = new System.Windows.Forms.Timer(this.components);
       this.dataBox = new System.Windows.Forms.TextBox();
-      this.resetButton = new System.Windows.Forms.Button();
+      this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+      this.trackBar1 = new System.Windows.Forms.TrackBar();
+      this.label1 = new System.Windows.Forms.Label();
+      this.label2 = new System.Windows.Forms.Label();
+      this.label3 = new System.Windows.Forms.Label();
       this.menuStrip1.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
       this.SuspendLayout();
       // 
       // menuStrip1
@@ -56,19 +60,11 @@
       // fileToolStripMenuItem
       // 
       this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newSudokuToolStripMenuItem,
             this.loadToolStripMenuItem,
             this.saveToolStripMenuItem});
       this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
       this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
       this.fileToolStripMenuItem.Text = "File";
-      // 
-      // newSudokuToolStripMenuItem
-      // 
-      this.newSudokuToolStripMenuItem.Name = "newSudokuToolStripMenuItem";
-      this.newSudokuToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-      this.newSudokuToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
-      this.newSudokuToolStripMenuItem.Text = "New Sudoku";
       // 
       // loadToolStripMenuItem
       // 
@@ -84,6 +80,7 @@
       this.saveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
       this.saveToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
       this.saveToolStripMenuItem.Text = "Save";
+      this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
       // 
       // openFileDialog1
       // 
@@ -109,7 +106,7 @@
       // 
       // button1
       // 
-      this.button1.Location = new System.Drawing.Point(12, 128);
+      this.button1.Location = new System.Drawing.Point(12, 37);
       this.button1.Name = "button1";
       this.button1.Size = new System.Drawing.Size(67, 23);
       this.button1.TabIndex = 2;
@@ -125,27 +122,58 @@
       // 
       // dataBox
       // 
-      this.dataBox.Location = new System.Drawing.Point(13, 176);
+      this.dataBox.Location = new System.Drawing.Point(12, 258);
       this.dataBox.Multiline = true;
       this.dataBox.Name = "dataBox";
       this.dataBox.Size = new System.Drawing.Size(149, 109);
       this.dataBox.TabIndex = 5;
       // 
-      // resetButton
+      // trackBar1
       // 
-      this.resetButton.Location = new System.Drawing.Point(85, 128);
-      this.resetButton.Name = "resetButton";
-      this.resetButton.Size = new System.Drawing.Size(61, 23);
-      this.resetButton.TabIndex = 6;
-      this.resetButton.Text = "Reset";
-      this.resetButton.UseVisualStyleBackColor = true;
+      this.trackBar1.Location = new System.Drawing.Point(33, 92);
+      this.trackBar1.Maximum = 100;
+      this.trackBar1.Name = "trackBar1";
+      this.trackBar1.Size = new System.Drawing.Size(104, 45);
+      this.trackBar1.SmallChange = 10;
+      this.trackBar1.TabIndex = 6;
+      // 
+      // label1
+      // 
+      this.label1.AutoSize = true;
+      this.label1.Location = new System.Drawing.Point(33, 123);
+      this.label1.Name = "label1";
+      this.label1.Size = new System.Drawing.Size(27, 13);
+      this.label1.TabIndex = 7;
+      this.label1.Text = "Fast";
+      // 
+      // label2
+      // 
+      this.label2.AutoSize = true;
+      this.label2.Location = new System.Drawing.Point(111, 123);
+      this.label2.Name = "label2";
+      this.label2.Size = new System.Drawing.Size(30, 13);
+      this.label2.TabIndex = 8;
+      this.label2.Text = "Slow";
+      this.label2.Click += new System.EventHandler(this.label2_Click);
+      // 
+      // label3
+      // 
+      this.label3.AutoSize = true;
+      this.label3.Location = new System.Drawing.Point(33, 189);
+      this.label3.Name = "label3";
+      this.label3.Size = new System.Drawing.Size(0, 13);
+      this.label3.TabIndex = 9;
+      this.label3.Click += new System.EventHandler(this.label3_Click);
       // 
       // MainForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(550, 395);
-      this.Controls.Add(this.resetButton);
+      this.Controls.Add(this.label3);
+      this.Controls.Add(this.label2);
+      this.Controls.Add(this.label1);
+      this.Controls.Add(this.trackBar1);
       this.Controls.Add(this.dataBox);
       this.Controls.Add(this.button1);
       this.Controls.Add(this.sudokuDisplay);
@@ -155,6 +183,7 @@
       this.Text = "Sudoku Solver";
       this.menuStrip1.ResumeLayout(false);
       this.menuStrip1.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -166,13 +195,16 @@
     private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
-    private System.Windows.Forms.ToolStripMenuItem newSudokuToolStripMenuItem;
     private System.Windows.Forms.OpenFileDialog openFileDialog1;
     private System.Windows.Forms.TextBox sudokuDisplay;
     private System.Windows.Forms.Button button1;
     private System.Windows.Forms.Timer timer1;
     private System.Windows.Forms.TextBox dataBox;
-    private System.Windows.Forms.Button resetButton;
+    private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+    private System.Windows.Forms.TrackBar trackBar1;
+    private System.Windows.Forms.Label label1;
+    private System.Windows.Forms.Label label2;
+    private System.Windows.Forms.Label label3;
   }
 }
 

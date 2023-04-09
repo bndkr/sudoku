@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace SudokuSolve
 
     private void loadToolStripMenuItem_Click(object sender, EventArgs e)
     {
+      label3.Text = "";
       openFileDialog1.ShowDialog();
       try
       {
@@ -58,11 +60,13 @@ namespace SudokuSolve
 
     private void Callback(Sudoku sudoku, Dictionary<string, string> data, bool done)
     {
+      Thread.Sleep(speed);
       updateSudokuText = sudoku.ToString();
       updateData = data;
       updatedone = done;
     }
 
+    private int speed = 0;
     private string updateSudokuText = null;
     private Dictionary<string, string> updateData = null;
     private bool updatedone = false;
@@ -74,13 +78,14 @@ namespace SudokuSolve
 
     private void timer1_Tick(object sender, EventArgs e)
     {
+      speed = trackBar1.Value;
       if (updatedone)
       {
-        // if (!currentSudoku.IsSolved())
-        // {
-        //   MessageBox.Show("Could not solve sudoku.");
-        // }
-        // updatedone = false;
+        if (!currentSudoku.IsSolved())
+        {
+          label3.Text = "Could not solve sudoku";
+        }
+        updatedone = false;
       }
         
       if (updateSudokuText != null)
@@ -99,6 +104,34 @@ namespace SudokuSolve
         dataBox.Text = str.ToString();
         updateData = null;
       }
+    }
+
+    private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+      saveFileDialog1.ShowDialog();
+
+      if (currentSudoku != null)
+      {
+        if (!currentSudoku.ToFile(saveFileDialog1.FileName))
+        {
+          MessageBox.Show("Could not save file");
+        }
+      }
+    }
+
+    private void label2_Click(object sender, EventArgs e)
+    {
+
+    }
+
+    private void statusStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+    {
+
+    }
+
+    private void label3_Click(object sender, EventArgs e)
+    {
+
     }
   }
 }

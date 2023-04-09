@@ -274,7 +274,7 @@ namespace SudokuTest
 
       var solver = new BacktrackSolver(sudoku, UpdateCallback);
       sudoku = solver.Solve().board;
-      Assert.IsTrue(sudoku.ToString() == expecteSudoku.ToString()); ;
+      Assert.IsTrue(sudoku.ToString() == expecteSudoku.ToString());
     }
 
     [TestMethod]
